@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterapp/main.dart';
+
+List<Map<String, dynamic>> dataChats = [];
 
 class MainPage extends StatefulWidget {
   @override
@@ -7,12 +11,24 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-
-
   @override
   void initState() {
-    // TODO: implement initState
+    firestore.collection("chats").limit(100).snapshots().listen((event) {
+      List<Map<String, dynamic>> data = [];
+
+      event.documents.forEach((documentSnapshot) {
+        data.add(documentSnapshot.data);
+      });
+
+      setState(() {
+        dataChats = data;
+      });
+    });
     super.initState();
+  }
+
+  createNewChat(Map<String, dynamic> newChat){
+    firestore.collection("chats").add(newChat);
   }
 
   @override
@@ -26,66 +42,45 @@ class _MainPageState extends State<MainPage> {
         backgroundColor: Colors.greenAccent,
       ),
       body: Center(
-        child: ListView(
+        child: dataChats.isEmpty
+            ? Text("loading")
+            : ListView.builder(
+          itemCount: dataChats.length,
+          itemBuilder: (BuildContext context, int index) {
+            return buildInkWell(context, message: dataChats[index]["message"].toString(),
+                title: dataChats[index]["title"].toString() , isPrivate: dataChats[index]["private"]
+            );
+                },
+              ),
+      ),
+    );
+  }
 
-          padding: EdgeInsets.all(9),
+  Widget buildInkWell(BuildContext context,
+      {String message = "Последнее сообщение",
+      String title = "",
+      bool isPrivate = false}) {
+    return InkWell(
+      child: Container(
+        margin: EdgeInsets.all(9.0),
+        padding: EdgeInsets.all(9.0),
+        decoration: BoxDecoration(
+            color: Colors.white10,
+            border: Border.all(color: Colors.greenAccent)),
+        child: Row(
           children: <Widget>[
-          InkWell(
-            child: Container(
-              margin: EdgeInsets.all(9.0),
-              padding: EdgeInsets.all(9.0),
-              decoration: BoxDecoration(color: Colors.white10,
-                  border: Border.all( color: Colors.greenAccent )),
-              child: Column (children: <Widget>[
-                Text ('Название чата'),
-                Text ("Последнее сообщение")
-              ],)
-              , ),
-          ),
-          InkWell(
-            splashColor: Colors.red,
-            child: Container(
-              margin: EdgeInsets.all(9.0),
-              padding: EdgeInsets.all(9.0),
-              decoration: BoxDecoration(color: Colors.white10,
-                  border: Border.all( color: Colors.greenAccent )),
-              child: Column (children: <Widget>[
-                Text ('Название чата'),
-                Text ("Последнее сообщение")
-              ],)
-              , ),
-          ),
-          Container(
-            margin: EdgeInsets.all(9.0),
-            padding: EdgeInsets.all(9.0),
-            decoration: BoxDecoration(color: Colors.white10,
-                border: Border.all( color: Colors.greenAccent )),
-            child: Column (children: <Widget>[
-              Text ('Название чата'),
-              Text ("Последнее сообщение")
-            ],)
-            , ),
-          Container(
-            margin: EdgeInsets.all(9.0),
-            padding: EdgeInsets.all(9.0),
-            decoration: BoxDecoration(color: Colors.white10,
-                border: Border.all( color: Colors.greenAccent )),
-            child: Column (children: <Widget>[
-              Text ('Название чата'),
-              Text ("Последнее сообщение")
-            ],)
-            , ),
-          Container(
-            margin: EdgeInsets.all(9.0),
-            padding: EdgeInsets.all(9.0),
-            decoration: BoxDecoration(color: Colors.white10,
-                border: Border.all( color: Colors.greenAccent )),
-            child: Column (children: <Widget>[
-              Text ('Название чата'),
-              Text ("Последнее сообщение")
-            ],)
-            , )
-          ],),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[Text(title), Text(message)],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: isPrivate ? Icon(Icons.lock) : Container(),
+            ),
+          ],
+        ),
       ),
     );
   }
