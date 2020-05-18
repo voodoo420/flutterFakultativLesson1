@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/main.dart';
+import 'package:flutterapp/ui/widgets/drawer.dart';
 
 import 'ChatPage.dart';
 
@@ -16,6 +17,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
+    getUser();
     firestore.collection("chats").orderBy("date").snapshots().listen((event) {
       List<Map<String, dynamic>> data = [];
 
@@ -33,12 +35,12 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MainDrawer(),
       appBar: AppBar(
         title: Text(
-          "Наш Чат",
-          style: TextStyle(color: Colors.black38),
+          "Чаты",
+          style: Theme.of(context).textTheme.headline3,
         ),
-        backgroundColor: Colors.greenAccent,
       ),
       body: Center(
         child: dataChats.isEmpty
@@ -123,8 +125,9 @@ class _MainPageState extends State<MainPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text("delete chat?"),
-                content: Text(title),
+                backgroundColor: Theme.of(context).backgroundColor,
+                title: Text("$title chat"),
+                content: Text("delete?"),
                 actions: [
                   FlatButton(
                     child: Text("delete"),
@@ -148,13 +151,16 @@ class _MainPageState extends State<MainPage> {
         padding: EdgeInsets.all(9.0),
         decoration: BoxDecoration(
             color: Colors.white10,
-            border: Border.all(color: Colors.greenAccent)),
+            border: Border.all(color: Theme.of(context).accentColor)),
         child: Row(
           children: <Widget>[
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[Text(title), Text(message)],
+                children: <Widget>[
+                  Text(title, style: Theme.of(context).textTheme.subtitle1),
+                  Text(message, style: Theme.of(context).textTheme.bodyText1)
+                ],
               ),
             ),
             Padding(
@@ -174,5 +180,9 @@ class _MainPageState extends State<MainPage> {
         builder: (context) => ChatPage(id: id, title: title),
       ),
     );
+  }
+
+  void getUser() {
+    auth.currentUser().then((value) => user = value);
   }
 }

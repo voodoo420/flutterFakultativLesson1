@@ -19,7 +19,6 @@ class _ChatPageState extends State<ChatPage> {
 
   _ChatPageState(this.id, this.title);
 
-  final _biggerFont = const TextStyle(fontSize: 18.0);
   TextEditingController _textFieldController = TextEditingController();
   List<Map<String, dynamic>> messages;
 
@@ -60,9 +59,8 @@ class _ChatPageState extends State<ChatPage> {
         appBar: AppBar(
           title: Text(
             title,
-            style: TextStyle(color: Colors.black38),
+            style: Theme.of(context).textTheme.headline3,
           ),
-          backgroundColor: Colors.greenAccent,
         ),
         body: Column(
           children: <Widget>[
@@ -76,7 +74,7 @@ class _ChatPageState extends State<ChatPage> {
                           icon: Icon(Icons.send),
                           onPressed: () => addMessage()),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green),
+                        borderSide: BorderSide(color: Colors.blue),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.blueGrey),
@@ -91,7 +89,7 @@ class _ChatPageState extends State<ChatPage> {
     if (_textFieldController.text.isNotEmpty) {
       Map<String, dynamic> message = {
         "message": _textFieldController.text,
-        "name": "You",
+        "name": user.phoneNumber.toString(),
         "date": DateTime.now().millisecondsSinceEpoch
       };
       firestore
@@ -107,14 +105,14 @@ class _ChatPageState extends State<ChatPage> {
     return ListTile(
       title: Text(
         message,
-        style: _biggerFont,
+        style: Theme.of(context).textTheme.bodyText1,
       ),
     );
   }
 
   Widget _buildSuggestions() {
     if (messages.isEmpty) {
-      return Text("chat is empty", style: _biggerFont);
+      return Text("chat is empty", style: Theme.of(context).textTheme.bodyText2);
     }
     return ListView.builder(
         padding: const EdgeInsets.all(4.0),
