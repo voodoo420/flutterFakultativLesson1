@@ -116,7 +116,7 @@ class _MainPageState extends State<MainPage> {
       String id = ""}) {
     return InkWell(
       onTap: () {
-        _openChat(context, id);
+        _openChat(context, id, title);
       },
       onLongPress: () {
         showDialog(
@@ -167,11 +167,11 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  void _openChat(BuildContext context, String id) {
+  void _openChat(BuildContext context, String id, String title) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatPage(id: id),
+        builder: (context) => ChatPage(id: id, title: title),
       ),
     );
   }

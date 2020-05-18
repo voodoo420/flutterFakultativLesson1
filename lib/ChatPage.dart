@@ -4,17 +4,20 @@ import 'package:flutterapp/main.dart';
 
 class ChatPage extends StatefulWidget {
   final String id;
+  final String title;
 
-  ChatPage({Key key, @required this.id}) : super(key: key);
+  ChatPage({Key key, @required this.id, @required this.title})
+      : super(key: key);
 
   @override
-  _ChatPageState createState() => _ChatPageState(id);
+  _ChatPageState createState() => _ChatPageState(id, title);
 }
 
 class _ChatPageState extends State<ChatPage> {
   final String id;
+  final String title;
 
-  _ChatPageState(this.id);
+  _ChatPageState(this.id, this.title);
 
   final _biggerFont = const TextStyle(fontSize: 18.0);
   TextEditingController _textFieldController = TextEditingController();
@@ -56,7 +59,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            "Наш Чат",
+            title,
             style: TextStyle(color: Colors.black38),
           ),
           backgroundColor: Colors.greenAccent,
