@@ -157,13 +157,6 @@ class _UserPageState extends State<UserPage> {
       "id": id
     };
     firestore.collection("users").document(id).setData(newUser);
-//    firestore.collection("users").add(newUser).then((data) {
-//      String id = data.documentID;
-//      newUser = {
-//        "id": id
-//      };
-//      data.updateData(newUser);
-//    });
   }
 
   void _toggleVisibility() {
