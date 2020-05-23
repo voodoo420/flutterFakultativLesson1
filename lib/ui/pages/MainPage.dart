@@ -18,7 +18,13 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     getUser();
-    firestore.collection("chats").orderBy("date").snapshots().listen((event) {
+    firestore
+        .collection("users")
+        .document(user.uid)
+        .collection("chats")
+        .orderBy("date", descending: true)
+        .snapshots()
+        .listen((event) {
       List<Map<String, dynamic>> data = [];
 
       event.documents.forEach((documentSnapshot) {
@@ -63,6 +69,7 @@ class _MainPageState extends State<MainPage> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
+                    backgroundColor: Theme.of(context).backgroundColor,
                     title: Text("chat name"),
                     content: TextFormField(
                       controller: _textFieldController,
@@ -91,26 +98,6 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  void createChat(String title) {
-    Map<String, dynamic> emptyChat = {
-      "message": "",
-      "title": "",
-      "private": false,
-      "date": ""
-    };
-    firestore.collection("chats").add(emptyChat).then((data) {
-      String id = data.documentID;
-      emptyChat = {
-        "message": "empty",
-        "title": title,
-        "private": false,
-        "id": id,
-        "date": DateTime.now().millisecondsSinceEpoch
-      };
-      data.setData(emptyChat);
-    });
-  }
-
   Widget buildInkWell(BuildContext context,
       {String message = "Последнее сообщение",
       String title = "",
@@ -132,7 +119,7 @@ class _MainPageState extends State<MainPage> {
                   FlatButton(
                     child: Text("delete"),
                     onPressed: () {
-                      firestore.collection("chats").document(id).delete();
+                      deleteChat(id);
                       Navigator.pop(context);
                     },
                   ),
@@ -171,6 +158,43 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
+  }
+
+  void createChat(String title) {
+    String id;
+    Map<String, dynamic> emptyChat = {
+      "message": "",
+      "title": "",
+      "private": false,
+      "date": ""
+    };
+    firestore.collection("chats").add(emptyChat).then((data) {
+      id = data.documentID;
+      emptyChat = {
+        "message": "empty",
+        "title": title,
+        "private": false,
+        "id": id,
+        "date": DateTime.now().millisecondsSinceEpoch
+      };
+      data.setData(emptyChat);
+      firestore
+          .collection("users")
+          .document(user.uid)
+          .collection("chats")
+          .document(id)
+          .setData(emptyChat);
+    });
+  }
+
+  void deleteChat(String id) {
+    firestore.collection("chats").document(id).delete();
+    firestore
+        .collection("users")
+        .document(user.uid)
+        .collection("chats")
+        .document(id)
+        .delete();
   }
 
   void _openChat(BuildContext context, String id, String title) {

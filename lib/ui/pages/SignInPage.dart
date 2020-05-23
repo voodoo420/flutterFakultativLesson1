@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterapp/ui/pages/UserPage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../main.dart';
@@ -33,14 +34,15 @@ class _SignInPageState extends State<SignInPage> {
       auth.signInWithCredential(phoneAuthCredential).then((AuthResult value) {
         if (value.user != null) {
           user = value.user;
-          // Handle loogged in state
           print(value.user.phoneNumber);
+          prefs.setBool("isAuthorized", true);
           if (value.user.displayName != null) {
+            print(value.user.displayName);
             Navigator.pushReplacement(
                 context, MaterialPageRoute(builder: (context) => MainPage()));
           } else {
             Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => MainPage()));
+                context, MaterialPageRoute(builder: (context) => UserPage()));
           }
         } else {
           showToast("error_validation_otp");
@@ -100,14 +102,14 @@ class _SignInPageState extends State<SignInPage> {
     auth.signInWithCredential(_authCredential).then((AuthResult value) {
       if (value.user != null) {
         user = value.user;
-        // Handle loogged in state
         print(value.user.phoneNumber);
         if (value.user.displayName != null) {
+          print(value.user.displayName);
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => MainPage()));
         } else {
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => MainPage()));
+              context, MaterialPageRoute(builder: (context) => UserPage()));
         }
       } else {
         showToast("error_validation_otp", color: Colors.red);

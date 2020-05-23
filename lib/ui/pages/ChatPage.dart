@@ -41,9 +41,16 @@ class _ChatPageState extends State<ChatPage> {
         messages = data;
         if (data.isNotEmpty) {
           Map<String, dynamic> lastMessageForUpdate = {
+            "date": DateTime.now().millisecondsSinceEpoch,
             "message": "${data.last["name"]}: ${data.last["message"]}",
           };
           firestore
+              .collection("chats")
+              .document(id)
+              .updateData(lastMessageForUpdate);
+          firestore
+              .collection("users")
+              .document(user.uid)
               .collection("chats")
               .document(id)
               .updateData(lastMessageForUpdate);
@@ -68,18 +75,25 @@ class _ChatPageState extends State<ChatPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
-                  controller: _textFieldController,
-                  decoration: InputDecoration(
-                      suffix: IconButton(
-                          icon: Icon(Icons.send),
-                          onPressed: () => addMessage()),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blueGrey),
-                      ),
-                      hintText: 'Enter message')),
+                style: Theme.of(context).textTheme.subtitle1,
+                controller: _textFieldController,
+                decoration: InputDecoration(
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Theme.of(context).accentColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueGrey),
+                  ),
+                  hintText: 'введите сообщение',
+                  suffixIcon: GestureDetector(
+                    onTap: () => addMessage(),
+                    child: Icon(
+                      Icons.send,
+                      color: Theme.of(context).accentColor,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ));
