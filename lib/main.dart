@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterapp/ui/pages/MainPage.dart';
 import 'package:flutterapp/ui/pages/SignInPage.dart';
 import 'package:flutterapp/themes/custom_theme.dart';
 import 'package:flutterapp/themes/themes.dart';
@@ -30,16 +31,18 @@ FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseUser user;
 SharedPreferences prefs;
 bool isDarkTheme = false;
+bool isAuthorized = false;
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    if (prefs.get("isAuthorized") == true) {
+      return MaterialApp(
+          title: 'Наш чат', theme: CustomTheme.of(context), home: MainPage());
+    }
     return MaterialApp(
-      title: 'Наш чат',
-      theme: CustomTheme.of(context),
-      home: SignInPage()
-    );
+        title: 'Наш чат', theme: CustomTheme.of(context), home: SignInPage());
   }
 }
 
@@ -77,17 +80,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
-
-        title: Text(widget.title, style: TextStyle(color: Colors.black38),),
+        title: Text(
+          widget.title,
+          style: TextStyle(color: Colors.black38),
+        ),
         backgroundColor: Colors.greenAccent,
       ),
       body: Center(
-
         child: Column(
-
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
