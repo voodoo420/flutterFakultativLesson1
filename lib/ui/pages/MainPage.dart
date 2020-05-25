@@ -5,38 +5,8 @@ import 'package:flutterapp/ui/widgets/drawer.dart';
 
 import 'ChatPage.dart';
 
-List<Map<String, dynamic>> dataChats = [];
-
-class MainPage extends StatefulWidget {
-  @override
-  _MainPageState createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-  TextEditingController _textFieldController = TextEditingController();
-
-  @override
-  void initState() {
-    getUser();
-    firestore
-        .collection("users")
-        .document(user.uid)
-        .collection("chats")
-        .orderBy("date", descending: true)
-        .snapshots()
-        .listen((event) {
-      List<Map<String, dynamic>> data = [];
-
-      event.documents.forEach((documentSnapshot) {
-        data.add(documentSnapshot.data);
-      });
-
-      setState(() {
-        dataChats = data;
-      });
-    });
-    super.initState();
-  }
+class MainPage extends StatelessWidget {
+  final TextEditingController _textFieldController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -49,18 +19,31 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
       body: Center(
-        child: dataChats.isEmpty
-            ? Text("loading")
-            : ListView.builder(
-                itemCount: dataChats.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return buildInkWell(context,
-                      message: dataChats[index]["message"].toString(),
-                      title: dataChats[index]["title"].toString(),
-                      isPrivate: dataChats[index]["private"],
-                      id: dataChats[index]["id"]);
-                },
-              ),
+        child: StreamBuilder(
+          stream: firestore
+              .collection("users")
+              .document(prefs.get("uid"))
+              .collection("chats")
+              .orderBy("date", descending: true)
+              .snapshots(),
+          builder: (BuildContext context, snapshot) {
+            return snapshot.hasData
+                ? ListView.builder(
+                    itemCount: snapshot.data.documents.length,
+                    itemBuilder: (context, index) {
+                      return buildInkWell(context,
+                          title:
+                              snapshot.data.documents.elementAt(index)["title"],
+                          message: snapshot.data.documents
+                              .elementAt(index)["message"]
+                              .toString(),
+                          isPrivate: snapshot.data.documents
+                              .elementAt(index)["private"],
+                          id: snapshot.data.documents.elementAt(index)["id"]);
+                    })
+                : Text("loading");
+          },
+        ),
       ),
       floatingActionButton: new FloatingActionButton(
           child: new Icon(Icons.add),
@@ -180,7 +163,7 @@ class _MainPageState extends State<MainPage> {
       data.setData(emptyChat);
       firestore
           .collection("users")
-          .document(user.uid)
+          .document(prefs.get("uid"))
           .collection("chats")
           .document(id)
           .setData(emptyChat);
@@ -191,7 +174,7 @@ class _MainPageState extends State<MainPage> {
     firestore.collection("chats").document(id).delete();
     firestore
         .collection("users")
-        .document(user.uid)
+        .document(prefs.get("uid"))
         .collection("chats")
         .document(id)
         .delete();

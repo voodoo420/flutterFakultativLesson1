@@ -36,6 +36,7 @@ class _SignInPageState extends State<SignInPage> {
           user = value.user;
           print(value.user.phoneNumber);
           prefs.setBool("isAuthorized", true);
+          prefs.setString("uid", user.uid);
           if (value.user.displayName != null) {
             print(value.user.displayName);
             Navigator.pushReplacement(
