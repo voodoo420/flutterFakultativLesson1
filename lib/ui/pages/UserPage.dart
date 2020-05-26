@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/main.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'MainPage.dart';
+import 'SignInPage.dart';
+
+File userImage;
 
 class UserPage extends StatefulWidget {
   @override
@@ -16,6 +21,14 @@ class _UserPageState extends State<UserPage> {
   TextEditingController password1 = TextEditingController();
   TextEditingController password2 = TextEditingController();
   bool _showPassword = false;
+
+  Future getImage() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      userImage = image;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,42 +122,55 @@ class _UserPageState extends State<UserPage> {
               ),
             ),
             SizedBox(height: 10),
-            FlatButton(
-              color: Theme.of(context).accentColor,
-              onPressed: () {
-                if (!email.text.contains("@")) {
-                  showToast("не корректно указан email");
-                } else if (password1.text.length < 6) {
-                  showToast("пароль должен быть более 6 символов");
-                } else if (password1.text != password2.text) {
-                  showToast("пароли не совпадают");
-                } else {
-                  _addUser();
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => MainPage()));
-                }
-              },
-              child: Text(
-                "Сохранить данные",
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            )
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                FlatButton(
+                  color: Theme.of(context).accentColor,
+                  onPressed: () {
+                    getImage();
+                    print("click");
+                  },
+                  child: Text(
+                    "Добавить аватар",
+                    style: Theme.of(context).textTheme.subtitle1,
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                FlatButton(
+                  color: Theme.of(context).accentColor,
+                  onPressed: () {
+                    if (!email.text.contains("@")) {
+                      showToast("не корректно указан email");
+                    } else if (password1.text.length < 6) {
+                      showToast("пароль должен быть более 6 символов");
+                    } else if (password1.text != password2.text) {
+                      showToast("пароли не совпадают");
+                    } else {
+                      _addUser();
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(builder: (context) => MainPage()));
+                    }
+                  },
+                  child: Text(
+                    "Сохранить данные",
+                    style: Theme.of(context).textTheme.subtitle1,
+                  ),
+                )
+              ],
+            ),
+            SizedBox(height: 10),
+            Center(
+                child: userImage == null
+                    ? Text('Аватар не выбран')
+                    : Image.file(userImage,
+                        width: 250, height: 250, fit: BoxFit.cover))
           ],
         ),
       ),
     );
-  }
-
-  void showToast(message, {Color color = Colors.black}) {
-    print(message);
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: color,
-        textColor: Colors.white,
-        fontSize: 16.0);
   }
 
   void _addUser() {
