@@ -118,6 +118,7 @@ class _ChatPageState extends State<ChatPage> {
                                     String uid = event.documents[0]["id"];
                                     print(uid);
                                     Map<String, dynamic> chat = {
+                                      "id": id,
                                       "date":
                                           DateTime.now().millisecondsSinceEpoch,
                                       "private": false,

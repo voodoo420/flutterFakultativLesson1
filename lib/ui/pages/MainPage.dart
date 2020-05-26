@@ -22,8 +22,8 @@ class MainPage extends StatelessWidget {
       body: Center(
         child: StreamBuilder(
           stream: firestore
-//              .collection("users")
-//              .document(user.uid)
+              .collection("users")
+              .document(user.uid)
               .collection("chats")
               .orderBy("date", descending: true)
               .snapshots(),
