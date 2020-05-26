@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/main.dart';
+import 'package:flutterapp/ui/pages/SignInPage.dart';
 
 class ChatPage extends StatefulWidget {
   final String id;
@@ -20,10 +21,18 @@ class _ChatPageState extends State<ChatPage> {
   _ChatPageState(this.id, this.title);
 
   TextEditingController _textFieldController = TextEditingController();
+  TextEditingController _numberController = TextEditingController();
   List<Map<String, dynamic>> messages;
+  String name;
 
   @override
   void initState() {
+    firestore
+        .collection("users")
+        .document(user.uid)
+        .snapshots()
+        .listen((value) => name = value.data["user"]);
+
     firestore
         .collection("chats")
         .document(id)
@@ -32,9 +41,9 @@ class _ChatPageState extends State<ChatPage> {
         .snapshots()
         .listen((event) {
       List<Map<String, dynamic>> data = [];
-
       event.documents.forEach((documentSnapshot) {
         data.add(documentSnapshot.data);
+        print(documentSnapshot.data["message"]);
       });
 
       setState(() {
@@ -68,6 +77,77 @@ class _ChatPageState extends State<ChatPage> {
             title,
             style: Theme.of(context).textTheme.headline3,
           ),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.add_call,
+                color: Theme.of(context).accentColor,
+              ),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        backgroundColor: Theme.of(context).backgroundColor,
+                        title: Text("добавить участника"),
+                        content: TextFormField(
+                          controller: _numberController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                              prefixText: "+", labelText: "номер телефона"),
+                        ),
+                        actions: [
+                          FlatButton(
+                            child: Text("отмена"),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          FlatButton(
+                            child: Text("добавить"),
+                            onPressed: () {
+                              if (_numberController.text != "") {
+                                print("+${_numberController.text}");
+                                firestore
+                                    .collection("users")
+                                    .where("phoneNumber",
+                                        isEqualTo: "+${_numberController.text}")
+                                    .snapshots()
+                                    .listen((event) {
+                                  if (event.documents.length != 0) {
+                                    String uid = event.documents[0]["id"];
+                                    print(uid);
+                                    Map<String, dynamic> chat = {
+                                      "id": id,
+                                      "date":
+                                          DateTime.now().millisecondsSinceEpoch,
+                                      "private": false,
+                                      "title": title,
+                                      "message": "",
+                                    };
+
+                                    firestore
+                                        .collection("users")
+                                        .document(uid)
+                                        .collection("chats")
+                                        .document(id)
+                                        .setData(chat);
+
+                                    _numberController.clear();
+                                    Navigator.pop(context);
+                                  } else
+                                    showToast(
+                                        "+${_numberController.text} не найден в базе");
+                                });
+                              }
+                            },
+                          )
+                        ],
+                      );
+                    });
+              },
+            )
+          ],
         ),
         body: Column(
           children: <Widget>[
@@ -79,7 +159,8 @@ class _ChatPageState extends State<ChatPage> {
                 controller: _textFieldController,
                 decoration: InputDecoration(
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).accentColor),
+                    borderSide:
+                        BorderSide(color: Theme.of(context).accentColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blueGrey),
@@ -103,9 +184,10 @@ class _ChatPageState extends State<ChatPage> {
     if (_textFieldController.text.isNotEmpty) {
       Map<String, dynamic> message = {
         "message": _textFieldController.text,
-        "name": user.phoneNumber.toString(),
+        "name": name,
         "date": DateTime.now().millisecondsSinceEpoch
       };
+      print(id);
       firestore
           .collection("chats")
           .document(id)
@@ -126,7 +208,8 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildSuggestions() {
     if (messages.isEmpty) {
-      return Text("chat is empty", style: Theme.of(context).textTheme.bodyText2);
+      return Text("chat is empty",
+          style: Theme.of(context).textTheme.bodyText2);
     }
     return ListView.builder(
         padding: const EdgeInsets.all(4.0),

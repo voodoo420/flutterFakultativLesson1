@@ -10,6 +10,7 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    getUser();
     return Scaffold(
       drawer: MainDrawer(),
       appBar: AppBar(
@@ -22,7 +23,7 @@ class MainPage extends StatelessWidget {
         child: StreamBuilder(
           stream: firestore
               .collection("users")
-              .document(prefs.get("uid"))
+              .document(user.uid)
               .collection("chats")
               .orderBy("date", descending: true)
               .snapshots(),
@@ -32,14 +33,17 @@ class MainPage extends StatelessWidget {
                     itemCount: snapshot.data.documents.length,
                     itemBuilder: (context, index) {
                       return buildInkWell(context,
-                          title:
-                              snapshot.data.documents.elementAt(index)["title"],
+                          title: snapshot.data.documents
+                              .elementAt(index)["title"]
+                              .toString(),
                           message: snapshot.data.documents
                               .elementAt(index)["message"]
                               .toString(),
                           isPrivate: snapshot.data.documents
                               .elementAt(index)["private"],
-                          id: snapshot.data.documents.elementAt(index)["id"]);
+                          id: snapshot.data.documents
+                              .elementAt(index)["id"]
+                              .toString());
                     })
                 : Text("loading");
           },
@@ -163,7 +167,7 @@ class MainPage extends StatelessWidget {
       data.setData(emptyChat);
       firestore
           .collection("users")
-          .document(prefs.get("uid"))
+          .document(user.uid)
           .collection("chats")
           .document(id)
           .setData(emptyChat);
@@ -174,7 +178,7 @@ class MainPage extends StatelessWidget {
     firestore.collection("chats").document(id).delete();
     firestore
         .collection("users")
-        .document(prefs.get("uid"))
+        .document(user.uid)
         .collection("chats")
         .document(id)
         .delete();

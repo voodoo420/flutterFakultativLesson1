@@ -36,7 +36,6 @@ class _SignInPageState extends State<SignInPage> {
           user = value.user;
           print(value.user.phoneNumber);
           prefs.setBool("isAuthorized", true);
-          prefs.setString("uid", user.uid);
           if (value.user.displayName != null) {
             print(value.user.displayName);
             Navigator.pushReplacement(
@@ -82,18 +81,6 @@ class _SignInPageState extends State<SignInPage> {
         verificationFailed: verificationFailed,
         codeSent: codeSent,
         codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
-  }
-
-  void showToast(message, {Color color = Colors.black}) {
-    print(message);
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: color,
-        textColor: Colors.white,
-        fontSize: 16.0);
   }
 
   void _onFormSubmitted() async {
@@ -166,7 +153,7 @@ class _SignInPageState extends State<SignInPage> {
                         onChanged: (value) {
                           if (value == "8") controllerPhoneNumber.text = "7";
                           setState(() {
-                            isPhoneNumberFull = value.length > 10;
+                            isPhoneNumberFull = value.length > 11;
                           });
                         },
                         controller: controllerPhoneNumber,
@@ -196,4 +183,17 @@ class _SignInPageState extends State<SignInPage> {
       ),
     );
   }
+}
+
+
+void showToast(message, {Color color = Colors.black}) {
+  print(message);
+  Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: color,
+      textColor: Colors.white,
+      fontSize: 16.0);
 }
