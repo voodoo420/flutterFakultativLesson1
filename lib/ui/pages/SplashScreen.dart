@@ -16,7 +16,7 @@ class _SplashScreenState extends State<SplashScreen>
   Animation<Color> colorAnimation;
   AnimationController colorController;
   var duration = Duration(seconds: 3);
-  var duration2 = Duration(milliseconds: 2700);
+  var duration2 = Duration(milliseconds: 2500);
 
   @override
   void initState() {
@@ -43,7 +43,8 @@ class _SplashScreenState extends State<SplashScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          BounceInUp(
+          FadeInDownBig(
+              duration: Duration(milliseconds: 500),
               child: Text('Ч',
                   style: TextStyle(fontSize: 32, color: colorAnimation.value))),
           SizedBox(width: 10),
@@ -51,12 +52,18 @@ class _SplashScreenState extends State<SplashScreen>
               child: Text('A',
                   style: TextStyle(fontSize: 32, color: Colors.blue))),
           SizedBox(width: 10),
+          BounceInDown(
+            child: Text('T',
+                style: TextStyle(fontSize: 32, color: colorAnimation.value)),
+          ),
+          SizedBox(width: 10),
           BounceInRight(
               child: Flash(
-                duration: Duration(seconds: 1),
-                child: Text('T',
-                    style: TextStyle(fontSize: 32, color: colorAnimation.value)),
-              )),
+            duration: duration,
+            infinite: true,
+            child:
+                Text('_', style: TextStyle(fontSize: 32, color: Colors.blue)),
+          )),
         ],
       ),
     ));
