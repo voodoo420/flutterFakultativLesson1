@@ -5,6 +5,7 @@ import 'package:flutterapp/ui/pages/MainPage.dart';
 import 'package:flutterapp/ui/pages/SignInPage.dart';
 import 'package:flutterapp/themes/custom_theme.dart';
 import 'package:flutterapp/themes/themes.dart';
+import 'package:flutterapp/ui/pages/SplashScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -34,15 +35,25 @@ bool isDarkTheme = false;
 bool isAuthorized = false;
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+  final routes = <String, WidgetBuilder>{
+    'Main': (BuildContext context) => MainPage(),
+    'SingIn': (BuildContext context) => SignInPage()
+  };
+
   @override
   Widget build(BuildContext context) {
     if (prefs.get("isAuthorized") == true) {
-      return MaterialApp(
-          title: 'Наш чат', theme: CustomTheme.of(context), home: MainPage());
-    }
+      return splash(context, 'Main');
+    } else
+      return splash(context, 'SingIn');
+  }
+
+  MaterialApp splash(BuildContext context, String route) {
     return MaterialApp(
-        title: 'Наш чат', theme: CustomTheme.of(context), home: SignInPage());
+        title: 'Наш чат',
+        theme: CustomTheme.of(context),
+        home: SplashScreen(nextRoute: route),
+        routes: routes);
   }
 }
 
