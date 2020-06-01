@@ -7,6 +7,7 @@ import 'ChatPage.dart';
 
 class MainPage extends StatelessWidget {
   final TextEditingController _textFieldController = TextEditingController();
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +30,11 @@ class MainPage extends StatelessWidget {
               .snapshots(),
           builder: (BuildContext context, snapshot) {
             return snapshot.hasData
-                ? ListView.builder(
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (context, index) {
-                      return buildInkWell(context,
+                ? AnimatedList(
+                    key: _listKey,
+                    initialItemCount: snapshot.data.documents.length,
+                    itemBuilder: (context, index, animation) {
+                      return buildInkWell(context, index, animation,
                           title: snapshot.data.documents
                               .elementAt(index)["title"]
                               .toString(),
@@ -85,7 +87,7 @@ class MainPage extends StatelessWidget {
     );
   }
 
-  Widget buildInkWell(BuildContext context,
+  Widget buildInkWell(BuildContext context, int index, Animation animation,
       {String message = "Последнее сообщение",
       String title = "",
       bool isPrivate = false,
@@ -106,7 +108,7 @@ class MainPage extends StatelessWidget {
                   FlatButton(
                     child: Text("delete"),
                     onPressed: () {
-                      deleteChat(id);
+                      deleteChat(id, index);
                       Navigator.pop(context);
                     },
                   ),
@@ -120,28 +122,31 @@ class MainPage extends StatelessWidget {
               );
             });
       },
-      child: Container(
-        margin: EdgeInsets.all(9.0),
-        padding: EdgeInsets.all(9.0),
-        decoration: BoxDecoration(
-            color: Colors.white10,
-            border: Border.all(color: Theme.of(context).accentColor)),
-        child: Row(
-          children: <Widget>[
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(title, style: Theme.of(context).textTheme.subtitle1),
-                  Text(message, style: Theme.of(context).textTheme.bodyText1)
-                ],
+      child: SizeTransition(
+        sizeFactor: animation,
+        child: Container(
+          margin: EdgeInsets.all(9.0),
+          padding: EdgeInsets.all(9.0),
+          decoration: BoxDecoration(
+              color: Colors.white10,
+              border: Border.all(color: Theme.of(context).accentColor)),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(title, style: Theme.of(context).textTheme.subtitle1),
+                    Text(message, style: Theme.of(context).textTheme.bodyText1)
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: isPrivate ? Icon(Icons.lock) : Container(),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: isPrivate ? Icon(Icons.lock) : Container(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -172,9 +177,11 @@ class MainPage extends StatelessWidget {
           .document(id)
           .setData(emptyChat);
     });
+
+    _listKey.currentState.insertItem(0);
   }
 
-  void deleteChat(String id) {
+  void deleteChat(String id, int index) {
     firestore.collection("chats").document(id).delete();
     firestore
         .collection("users")
@@ -182,6 +189,10 @@ class MainPage extends StatelessWidget {
         .collection("chats")
         .document(id)
         .delete();
+    AnimatedListRemovedItemBuilder builder = (context, animation){
+      return buildInkWell(context, index, animation);
+    };
+    _listKey.currentState.removeItem(index, builder);
   }
 
   void _openChat(BuildContext context, String id, String title) {
