@@ -1,3 +1,4 @@
+import 'package:firebase_image/firebase_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/main.dart';
@@ -26,6 +27,7 @@ class _ChatPageState extends State<ChatPage> {
   TextEditingController _numberController = TextEditingController();
   List<Map<String, dynamic>> messages;
   String name;
+  String avatar;
 
   @override
   void initState() {
@@ -33,7 +35,11 @@ class _ChatPageState extends State<ChatPage> {
         .collection("users")
         .document(user.uid)
         .snapshots()
-        .listen((value) => name = value.data["user"]);
+        .listen((value) {
+          name = value.data["user"];
+          avatar = value.data["photoURL"];
+          print(avatar);
+        });
 
     firestore
         .collection("chats")
@@ -188,7 +194,8 @@ class _ChatPageState extends State<ChatPage> {
       Map<String, dynamic> message = {
         "message": _textFieldController.text,
         "name": name,
-        "date": DateTime.now().millisecondsSinceEpoch
+        "date": DateTime.now().millisecondsSinceEpoch,
+        "avatar": avatar
       };
       print(id);
       firestore
@@ -215,22 +222,35 @@ class _ChatPageState extends State<ChatPage> {
           var date = DateTime.fromMicrosecondsSinceEpoch(
               messages[index]["date"] * 1000);
           return _buildMessage(animation, index,
-              "${messages[index]["name"]} ($date)\n${messages[index]["message"]}");
+              "${messages[index]["name"]} ($date)\n${messages[index]["message"]}", messages[index]["avatar"]);
         });
   }
 
-  Widget _buildMessage(Animation animation, int index, String message) {
+  Widget _buildMessage(Animation animation, int index, String message, String avatarUrl) {
     return SizeTransition(
       sizeFactor: animation,
-      child: Column(children: <Widget>[
-        Container(
-            child: Text(message, style: Theme.of(context).textTheme.bodyText1),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15.0),
-                border: Border.all(color: Theme.of(context).accentColor)),
-            padding: EdgeInsets.all(8.0)),
-        SizedBox(height: 6),
-      ]),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 4),
+        child: Container( decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15.0),
+            border: Border.all(color: Theme.of(context).accentColor)),
+            padding: EdgeInsets.all(2),
+          child: Row(children: <Widget>[
+            Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    image: DecorationImage(
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        image: FirebaseImage("gs://myflatterlessons.appspot.com$avatarUrl")))),
+            SizedBox(width: 4),
+            Text(message,
+                style: Theme.of(context).textTheme.bodyText1),
+          ]),
+        ),
+      ),
     );
   }
 }

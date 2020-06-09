@@ -1,14 +1,14 @@
 import 'dart:io';
+import 'dart:isolate';
 
+import 'package:firebase_image/firebase_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterapp/functions/fireStorage.dart';
 import 'package:flutterapp/main.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'MainPage.dart';
 import 'SignInPage.dart';
-
-File userImage;
 
 class UserPage extends StatefulWidget {
   @override
@@ -21,13 +21,25 @@ class _UserPageState extends State<UserPage> {
   TextEditingController password1 = TextEditingController();
   TextEditingController password2 = TextEditingController();
   bool _showPassword = false;
+  String photoUrl;
+  Isolate isolate;
+  bool set = true;
 
-  Future getImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      userImage = image;
+  @override
+  void initState() {
+    print("uid: ${user.uid}");
+    firestore
+        .collection("users")
+        .document(user.uid)
+        .snapshots()
+        .listen((event) {
+      if (event.data == null) return;
+      setState(() {
+        photoUrl = "gs://myflatterlessons.appspot.com${event.data["photoURL"]}";
+        print(photoUrl);
+      });
     });
+    super.initState();
   }
 
   @override
@@ -128,8 +140,9 @@ class _UserPageState extends State<UserPage> {
                 FlatButton(
                   color: Theme.of(context).accentColor,
                   onPressed: () {
-                    getImage();
-                    print("click");
+                    _addUser();
+                    uploadUserAvatar(user.uid, isolate);
+                    set = false;
                   },
                   child: Text(
                     "Добавить аватар",
@@ -163,10 +176,18 @@ class _UserPageState extends State<UserPage> {
             ),
             SizedBox(height: 10),
             Center(
-                child: userImage == null
+                child: photoUrl == null
                     ? Text('Аватар не выбран')
-                    : Image.file(userImage,
-                        width: 250, height: 250, fit: BoxFit.cover))
+                    : Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            image: DecorationImage(
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              image: FirebaseImage(photoUrl),
+                            ))))
           ],
         ),
       ),
@@ -182,7 +203,8 @@ class _UserPageState extends State<UserPage> {
       "phoneNumber": user.phoneNumber.toString(),
       "id": id
     };
-    firestore.collection("users").document(id).setData(newUser);
+    set? firestore.collection("users").document(id).setData(newUser) :
+    firestore.collection("users").document(id).updateData(newUser);
   }
 
   void _toggleVisibility() {
