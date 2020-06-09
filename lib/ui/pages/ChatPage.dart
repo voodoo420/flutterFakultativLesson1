@@ -20,6 +20,8 @@ class _ChatPageState extends State<ChatPage> {
 
   _ChatPageState(this.id, this.title);
 
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+
   TextEditingController _textFieldController = TextEditingController();
   TextEditingController _numberController = TextEditingController();
   List<Map<String, dynamic>> messages;
@@ -181,6 +183,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   addMessage() {
+    int index = messages.length;
     if (_textFieldController.text.isNotEmpty) {
       Map<String, dynamic> message = {
         "message": _textFieldController.text,
@@ -194,33 +197,40 @@ class _ChatPageState extends State<ChatPage> {
           .collection("messages")
           .add(message);
       _textFieldController.clear();
-    }
-  }
 
-  Widget _buildRow(String message) {
-    return ListTile(
-      title: Text(
-        message,
-        style: Theme.of(context).textTheme.bodyText1,
-      ),
-    );
+      _listKey.currentState.insertItem(index);
+    }
   }
 
   Widget _buildSuggestions() {
-    if (messages.isEmpty) {
+    if (messages?.isEmpty ?? true) {
       return Text("chat is empty",
           style: Theme.of(context).textTheme.bodyText2);
     }
-    return ListView.builder(
-        padding: const EdgeInsets.all(4.0),
-        itemCount: messages.length * 2 - 1,
-        itemBuilder: (context, i) {
-          if (i.isOdd) return Divider();
-          final index = i ~/ 2;
+    return AnimatedList(
+        key: _listKey,
+        initialItemCount: messages.length,
+        padding: const EdgeInsets.all(6.0),
+        itemBuilder: (context, index, animation) {
           var date = DateTime.fromMicrosecondsSinceEpoch(
               messages[index]["date"] * 1000);
-          return _buildRow(
+          return _buildMessage(animation, index,
               "${messages[index]["name"]} ($date)\n${messages[index]["message"]}");
         });
+  }
+
+  Widget _buildMessage(Animation animation, int index, String message) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: Column(children: <Widget>[
+        Container(
+            child: Text(message, style: Theme.of(context).textTheme.bodyText1),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15.0),
+                border: Border.all(color: Theme.of(context).accentColor)),
+            padding: EdgeInsets.all(8.0)),
+        SizedBox(height: 6),
+      ]),
+    );
   }
 }
