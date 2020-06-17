@@ -19,12 +19,6 @@ class _SignInPageState extends State<SignInPage> {
   String _verificationId;
   bool isPhoneNumberFull = false;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
   void _onVerifyCode() async {
     setState(() {
       isCodeSend = true;
@@ -184,7 +178,6 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 }
-
 
 void showToast(message, {Color color = Colors.black}) {
   print(message);
